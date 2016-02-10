@@ -1,0 +1,12 @@
+dsk:
+  build: .
+  command: npm start
+  ports:
+    - "5600:5600"
+  volumes:
+    - .:/app
+    - /app/node_modules/
+    - /app/bower_components/
+    - /app/async-disk-cache/
+    - /app/tmp/
+    - /app/dist/
