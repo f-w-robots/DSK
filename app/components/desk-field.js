@@ -2,12 +2,24 @@ import Ember from 'ember';
 
 export default Ember.Component.extend(Ember.Evented, {
   cars: {},
+  obstacles: null,
 
-  generate: function(field) {
+  generateObstacles: function() {
+    var cellCount = this.get('cellCount');
+
+    this.set('obstacles', []);
+    for(var i = 0; i < cellCount; i++) {
+      var positionX = Math.trunc(Math.random() * (cellCount - 0.00001));
+      var positionY = Math.trunc(Math.random() * (cellCount - 0.00001));
+      this.get('obstacles').push([positionX, positionY]);
+    }
+  },
+
+  generateField: function() {
     var ctx = field.getContext('2d');
     var border = this.get('border');
-    var cellSize = this.get('cellSize');;
-    var cellCount = this.get('cellCount');;
+    var cellSize = this.get('cellSize');
+    var cellCount = this.get('cellCount');
     field.width  = cellCount * cellSize + 2 * border;
     field.height = field.width;
     ctx.fillRect(0, 0, field.width, field.height);
@@ -32,14 +44,18 @@ export default Ember.Component.extend(Ember.Evented, {
       ctx.stroke();
     }
 
-    for(var i = 0; i < cellCount * 2; i++) {
+    if(!this.get('obstacles')) {
+      this.generateObstacles();
+    }
+    for(var i = 0; i < this.get('obstacles').length; i++) {
+
       ctx.beginPath();
       ctx.strokeStyle = 'red';
       ctx.fillStyle = 'red';
       ctx.lineWidth = 1;
 
-      var positionX = Math.trunc(Math.random() * (cellCount - 0.00001));
-      var positionY = Math.trunc(Math.random() * (cellCount - 0.00001));
+      var positionX = this.get('obstacles')[i][0];
+      var positionY = this.get('obstacles')[i][1];
 
       ctx.arc(offset + cellSize * positionX, offset + cellSize * positionY, cellSize * 0.4, 0, 2 * Math.PI, false);
       ctx.fill();
@@ -48,19 +64,30 @@ export default Ember.Component.extend(Ember.Evented, {
     }
   },
 
-  didInsertElement: function() {
-    this.generate(field);
+  displayCars: function() {
+    var ctx = field.getContext("2d");
+    for (var key in this.get('cars')) {
+      var img = this.get('cars')[key].getImage()
+      ctx.drawImage(img,100,100, 100, 100);
+    }
+  },
 
-    $.field = this;
+  generate: function() {
+    this.generateField();
+    this.displayCars();
+  },
+
+  didInsertElement: function() {
+    this.generate();
   },
 
   actions: {
     update: function() {
-      alert("received");
+      this.generate();
     },
 
     registerCar: function(car) {
-      car[car.getId()] = car;
+      this.get('cars')[car.getId()] = car;
     }
   }
 });
