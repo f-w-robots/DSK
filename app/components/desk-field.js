@@ -2,16 +2,32 @@ import Ember from 'ember';
 
 export default Ember.Component.extend({
   didInsertElement: function() {
-		var ctx    = canvas.getContext('2d');
-    canvas.width  = 640;
-    canvas.height = 480;
-    ctx.strokeRect(15, 15, 266, 266);
-    ctx.strokeRect(18, 18, 260, 260);
-    ctx.fillRect(20, 20, 256, 256);
-    for (var i = 0; i < 8; i += 2)
-      for (var j = 0; j < 8; j += 2) {
-        ctx.clearRect(20 + i * 32, 20 + j * 32, 32, 32);
-        ctx.clearRect(20 + (i + 1) * 32, 20 + (j + 1) * 32, 32, 32);
-      }
+		var ctx = field.getContext('2d');
+    var border = 10;
+    var cellSize = 100;
+    var cellCount = 8;
+    field.width  = cellCount * cellSize + 2 * border;
+    field.height = field.width;
+    ctx.fillRect(0, 0, field.width, field.height);
+    ctx.lineWidth = border * 2;
+    ctx.strokeStyle = 'blue';
+    ctx.strokeRect(0, 0, field.width, field.height);
+
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = cellSize / 10;
+
+    for (var i = 0; i < cellCount; i++) {
+      var offset = border + cellSize / 2;
+
+      ctx.beginPath();
+      ctx.moveTo(offset - border/2, offset + cellSize * i);
+      ctx.lineTo(field.width - offset + border / 2, offset + cellSize * i);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(offset + cellSize * i, offset);
+      ctx.lineTo(offset + cellSize * i, field.width - offset);
+      ctx.stroke();
+    }
   }
 });
