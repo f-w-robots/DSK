@@ -20,13 +20,30 @@ export default Ember.Component.extend({
       var offset = border + cellSize / 2;
 
       ctx.beginPath();
-      ctx.moveTo(offset - border/2, offset + cellSize * i);
+      ctx.moveTo(offset - border / 2, offset + cellSize * i);
       ctx.lineTo(field.width - offset + border / 2, offset + cellSize * i);
       ctx.stroke();
 
       ctx.beginPath();
       ctx.moveTo(offset + cellSize * i, offset);
       ctx.lineTo(offset + cellSize * i, field.width - offset);
+      ctx.stroke();
+    }
+
+    for(var i = 0; i < cellCount * 2; i++) {
+      ctx.beginPath();
+      ctx.strokeStyle = 'red';
+      ctx.fillStyle = 'red';
+      ctx.lineWidth = 1;
+
+      var positionX = Math.trunc(Math.random() * (cellCount - 0.00001));
+      var positionY = Math.trunc(Math.random() * (cellCount - 0.00001));
+
+      console.log(positionX)
+
+      ctx.arc(offset + cellSize * positionX, offset + cellSize * positionY, cellSize * 0.4, 0, 2 * Math.PI, false);
+      ctx.fill();
+
       ctx.stroke();
     }
   }
