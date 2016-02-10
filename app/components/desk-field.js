@@ -1,11 +1,13 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
-  didInsertElement: function() {
-		var ctx = field.getContext('2d');
-    var border = 10;
-    var cellSize = 100;
-    var cellCount = 8;
+export default Ember.Component.extend(Ember.Evented, {
+  cars: {},
+
+  generate: function(field) {
+    var ctx = field.getContext('2d');
+    var border = this.get('border');
+    var cellSize = this.get('cellSize');;
+    var cellCount = this.get('cellCount');;
     field.width  = cellCount * cellSize + 2 * border;
     field.height = field.width;
     ctx.fillRect(0, 0, field.width, field.height);
@@ -39,12 +41,26 @@ export default Ember.Component.extend({
       var positionX = Math.trunc(Math.random() * (cellCount - 0.00001));
       var positionY = Math.trunc(Math.random() * (cellCount - 0.00001));
 
-      console.log(positionX)
-
       ctx.arc(offset + cellSize * positionX, offset + cellSize * positionY, cellSize * 0.4, 0, 2 * Math.PI, false);
       ctx.fill();
 
       ctx.stroke();
+    }
+  },
+
+  didInsertElement: function() {
+    this.generate(field);
+
+    $.field = this;
+  },
+
+  actions: {
+    update: function() {
+      alert("received");
+    },
+
+    registerCar: function(car) {
+      car[car.getId()] = car;
     }
   }
 });
