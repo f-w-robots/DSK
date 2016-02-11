@@ -12,12 +12,14 @@ export default Ember.Component.extend(Ember.Evented, {
     for(var i = 0; i < cellCount;) {
       var positionX = Math.trunc(Math.random() * (cellCount - 0.00001));
       var positionY = Math.trunc(Math.random() * (cellCount - 0.00001));
-      if(positionY > 0 && positionY < cellCount - 1
-        && positionX > 0 && positionX < cellCount - 1
-      /*TODO - dublicates*/) {
-        i++
+      if(positionY + positionX == 0 || positionY + positionX == cellCount * 2 - 2
+        || (positionX == 0 && positionY == cellCount -1)
+        || (positionY == 0 && positionX == cellCount -1)
+        // TODO - dublicates
+      ) {
+        continue
       } else {
-        continue;
+        i++;
       }
 
       this.get('obstacles').push([positionX, positionY]);
@@ -164,7 +166,7 @@ export default Ember.Component.extend(Ember.Evented, {
           sensors = sensors + '-';
           continue;
         }
-        var dx = Math.round(size * Math.cos(angle + i * Math.PI/2 ));
+        var dx = Math.round(size * Math.cos(angle + i * Math.PI/2));
         var dy = Math.round(size * Math.sin(angle + i * Math.PI/2));
 
         var sensorF = ctx.getImageData(xy[0] + dx, xy[1] + dy, 1, 1);

@@ -17,7 +17,7 @@ export default Ember.Component.extend({
 
     var self = this;
     img.onload = function () {
-      self.get('parentView').send('update', self);
+      self.update();
     }
     this.updateImage('power');
     this.setReady();
@@ -25,6 +25,10 @@ export default Ember.Component.extend({
 
   updateImage: function(url) {
     this.get('img').src = 'images/car_' + url + '.png';
+  },
+
+  update() {
+    this.get('parentView').send('update', this);
   },
 
   getId: function() {
@@ -39,15 +43,18 @@ export default Ember.Component.extend({
     setTimeout(function() {
       // TODO - ip
       var socket = new WebSocket("ws://localhost:2500/turtle");
+      self.set('socket', socket);
       socket.onopen = function (event) {
         self.updateImage('ok');
         self.updateSensors();
+        socket.send(self.get('sensors'));
       };
 
       socket.onmessage = function (event) {
         console.log(event.data);
+        self.command(event.data);
         self.updateSensors();
-        // socket.send(self.sensorsRead());
+        socket.send(self.get('sensors'));
       };
 
       socket.onerror = function (event) {
@@ -78,5 +85,34 @@ export default Ember.Component.extend({
 
   updateSensors: function() {
     this.get('parentView').send('updateSensors', this);
+  },
+
+  command: function(command) {
+    if(command == 'f')
+      this.move();
+    if(command == 'r' || command == 'rl')
+      this.rotate(command);
+    if(command == 's')
+      this.get('socket').close();
+
+    this.update();
+  },
+
+  rotate: function(direction) {
+    if(direction == 'r')
+      this.set('angle', this.get('angle') + Math.PI / 2)
+    if(direction == 'l')
+      this.set('angle', this.get('angle') - Math.PI / 2)
+  },
+
+  move: function() {
+    var angle = this.get('angle');
+    var dx = Math.round(Math.cos(angle));
+    var dy = Math.round(Math.sin(angle));
+
+    var xy = this.get('position');
+    xy[0] += dx;
+    xy[1] += dy;
+    console.log(xy);
   }
 });
