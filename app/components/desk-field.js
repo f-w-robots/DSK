@@ -9,6 +9,7 @@ export default Ember.Component.extend(Ember.Evented, {
     var cellCount = this.get('cellCount');
 
     this.set('obstacles', []);
+    return
     for(var i = 0; i < cellCount;) {
       var positionX = Math.trunc(Math.random() * (cellCount - 0.00001));
       var positionY = Math.trunc(Math.random() * (cellCount - 0.00001));
@@ -61,7 +62,6 @@ export default Ember.Component.extend(Ember.Evented, {
       this.generateObstacles();
     }
     for(var i = 0; i < this.get('obstacles').length; i++) {
-
       ctx.beginPath();
       ctx.strokeStyle = 'red';
       ctx.fillStyle = 'red';
@@ -105,7 +105,7 @@ export default Ember.Component.extend(Ember.Evented, {
     for (var key in this.get('cars')) {
       var car = this.get('cars')[key]
       if(car.getId() == 1) {
-        car.setPosition(this.getXZOf(0,0), Math.PI * car.getId() * 0.5 );
+        car.setPosition(this.getXZOf(0,0), Math.PI * car.getId() * 0.5);
       } else if (car.getId() == 2) {
         car.setPosition(this.getXZOf(this.get('cellCount') - 1, this.get('cellCount') - 1), Math.PI * car.getId() * 0.5 );
       } else if (car.getId() == 3) {
