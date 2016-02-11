@@ -9,7 +9,7 @@ export default Ember.Component.extend(Ember.Evented, {
     var cellCount = this.get('cellCount');
 
     this.set('obstacles', []);
-    return
+
     for(var i = 0; i < cellCount;) {
       var positionX = Math.trunc(Math.random() * (cellCount - 0.00001));
       var positionY = Math.trunc(Math.random() * (cellCount - 0.00001));

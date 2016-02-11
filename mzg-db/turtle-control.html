@@ -1,0 +1,29 @@
+<div class="controlBlock">
+  <button class="f">forward</button>
+  <button class="l">left</button>
+  <button class="r">right</button>
+  <button class="s">revert</button>
+</div>
+
+<textarea id="stack" name="name" rows="8" cols="40" disabled></textarea>
+
+<script type="text/javascript">
+    $('.controlBlock button').click(function(event) {
+      $('#stack').append(event.target.className);
+      // socket.send("S" + event.target.className);
+    });
+    setInterval(function() {
+      if(messageStack.indexOf('wait') > -1) {
+        console.log(messageStack);
+        var stack = $('#stack').html()
+        if(stack.length == 0)
+         return
+
+        messageStack = [];
+        var command = stack[0];
+        $('#stack').html(stack.substr(1, stack.length));
+        console.log('send');
+        socket.send("S" + command);
+      }
+    }, 10);
+</script>

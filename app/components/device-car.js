@@ -119,12 +119,17 @@ export default Ember.Component.extend({
       this.rotateAnimate(command);
   },
 
+  wait: function() {
+    this.get('socket').send('wait')
+  },
+
   moveAnimate: function() {
     var self = this;
     var count = 0;
     var intervalId = setInterval(function() {
       if(count >= 100) {
         clearInterval(intervalId);
+        self.wait();
         return;
       }
       count += 1
@@ -143,6 +148,7 @@ export default Ember.Component.extend({
     var intervalId = setInterval(function() {
       if(count >= speed) {
         clearInterval(intervalId);
+        self.wait();
         return;
       }
       count += 1;
