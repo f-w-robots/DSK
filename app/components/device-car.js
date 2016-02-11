@@ -4,27 +4,21 @@ export default Ember.Component.extend({
   position: null,
   ready: false,
   img: null,
-  imgSize: 65,
+  imgSize: 64,
   position: null,
   carId: null,
   angle: null,
+  status: 'power',
 
   didInsertElement: function() {
-    var img = new Image();
-    this.set('img', img)
-
     this.get('parentView').send('registerCar', this);
 
-    var self = this;
-    img.onload = function () {
-      self.update();
-    }
-    this.updateImage('power');
     this.setReady();
   },
 
-  updateImage: function(url) {
-    this.get('img').src = 'images/car_' + url + '.png';
+  updateImage: function(status) {
+    this.set('status', status);
+    this.update();
   },
 
   update() {
@@ -137,4 +131,36 @@ export default Ember.Component.extend({
     }
     this.set('sensors', sensors)
   },
+
+  draw: function(field) {
+    var ctx = field.getContext("2d");
+    ctx.fillStyle = '#DAB218';
+    var position = this.getPosition();
+    var xy = position[0];
+    var angle = this.get('angle');
+    var size = this.get('imgSize');
+    var siz = this.get('imgSize') / 2;
+    var deltaSize = 10;
+
+    var dy = Math.abs(Math.round(Math.cos(angle)));
+    var dx = Math.abs(Math.round(Math.sin(angle)));
+
+    ctx.fillRect(xy[0] - size / 2 + dx * deltaSize, xy[1] - size / 2 + dy * deltaSize,
+       size - dx * deltaSize * 2, size - dy * deltaSize * 2);
+
+    ctx.beginPath();
+    var status = this.get('status');
+    if(status == 'power') {
+      ctx.fillStyle = 'green';
+    }
+    if(status == 'error') {
+      ctx.fillStyle = 'red';
+    }
+    if(status == 'ok') {
+      ctx.fillStyle = 'blue';
+    }
+    ctx.arc(xy[0], xy[1], size * 0.2, 0, 2 * Math.PI, false);
+    ctx.fill();
+  },
+
 });

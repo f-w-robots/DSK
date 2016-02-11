@@ -83,32 +83,6 @@ export default Ember.Component.extend(Ember.Evented, {
       this.get('offset') + this.get('cellSize') * y];
   },
 
-  rotateImage: function(image,angle) {
-    var offscreenCanvas = document.createElement('canvas');
-    var offscreenCtx = offscreenCanvas.getContext('2d');
-
-    var size = Math.max(image.width, image.height);
-    offscreenCanvas.width = size;
-    offscreenCanvas.height = size;
-
-    offscreenCtx.translate(size/2, size/2);
-    offscreenCtx.rotate(angle + Math.PI/2);
-    offscreenCtx.drawImage(image, -(image.width/2), -(image.height/2));
-
-    return offscreenCanvas;
-  },
-
-  drawCar: function(car) {
-    var ctx = field.getContext("2d");
-    var position = car.getPosition();
-    var img = car.getImage();
-    img = this.rotateImage(img, position[1]);
-
-    ctx.drawImage(img, position[0][0] - img.width / 2,
-      position[0][1] - img.height / 2,
-      img.width, img.height);
-  },
-
   displayCars: function() {
     for (var key in this.get('cars')) {
       var car = this.get('cars')[key];
@@ -116,7 +90,7 @@ export default Ember.Component.extend(Ember.Evented, {
       if(!car.getPosition())
         continue;
 
-      this.drawCar(car);
+      car.draw(field);
     }
   },
 
