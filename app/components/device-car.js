@@ -45,10 +45,10 @@ export default Ember.Component.extend({
       };
 
       socket.onmessage = function (event) {
-        console.log(event.data);
         self.command(event.data);
         self.updateSensors();
         socket.send(self.get('sensors'));
+        console.log(event.data);
       };
 
       socket.onerror = function (event) {
@@ -80,33 +80,37 @@ export default Ember.Component.extend({
   command: function(command) {
     if(command == 'f')
       this.move();
-    if(command == 'r' || command == 'l')
+    if(command == 'r' || command == 'l') {
+      this.get('socket').close();
+      this.rotate('l');
       this.rotate(command);
+    }
     if(command == 's')
       this.get('socket').close();
-    if(command == 'r') {
+    if(command == 'b') {
       this.rotate('l');
-      this.rotate(';');
+      this.rotate('l');
     }
     this.update();
   },
 
   rotate: function(direction) {
+    var xy = this.get('position');
+    this.move(28)
     if(direction == 'r')
       this.set('angle', this.get('angle') + Math.PI / 2)
     if(direction == 'l')
       this.set('angle', this.get('angle') - Math.PI / 2)
-
   },
 
-  move: function() {
+  move: function(step = 1) {
     var angle = this.get('angle');
     var dx = Math.round(Math.cos(angle));
     var dy = Math.round(Math.sin(angle));
 
     var xy = this.get('position');
-    xy[0] += dx;
-    xy[1] += dy;
+    xy[0] += dx * step;
+    xy[1] += dy * step;
   },
 
   updateSensors: function() {
@@ -117,35 +121,11 @@ export default Ember.Component.extend({
     var ctx = field.getContext("2d");
 
     var sensors = '';
-    // for (var i = 0; i < 4; i++) {
-    //   if(i == 2) {
-    //     sensors = sensors + '-';
-    //     continue;
-    //   } else {
-    //     // var dx = Math.round(size * Math.cos(angle));
-    //     // var dy = Math.round(size * Math.sin(angle));
-    //     var dx = Math.cos(angle);
-    //     var dy = Math.sin(angle);
-    //   }
-    //   var sensor = ctx.getImageData(xy[0] + size * dx, xy[1] + size * dy, 1, 1);
-    //
-    //   if(i == 3) {
-    //     console.log([xy[0] + size * dx, xy[1] + size * dy],
-    //       [xy[0] + size * dx + Math.round(size/2+1), xy[1] + size * dy]);
-    //     sensor = ctx.getImageData(xy[0] + size * dx - 5, xy[1] - size , 1, 1);
-    //   }
-    //
-    //   if(sensor.data[0] + sensor.data[1] + sensor.data[2] == 255+255+255) {
-    //     sensors = sensors + '1';
-    //   } else {
-    //     sensors = sensors + '0';
-    //   }
-    // }
+
     var dx = Math.round(Math.cos(angle));
     var dy = Math.round(Math.sin(angle));
     var a = [xy[0] + size * dx, xy[1] + size * dy]
     var sensor = ctx.getImageData(a[0], a[1], 1, 1);
-    console.log(a, sensor.data[0] + sensor.data[1] + sensor.data[2]);
     if(sensor.data[0] + sensor.data[1] + sensor.data[2] == 765) {
       sensors = sensors + '0';
     } else {
@@ -154,7 +134,6 @@ export default Ember.Component.extend({
 
     var a = [xy[0] + size * dx + size * dy - 1 * dx, xy[1] + size * dy + size * dx - 1 * dy]
     var sensor = ctx.getImageData(a[0], a[1], 1, 1);
-    console.log(a, sensor.data[0] + sensor.data[1] + sensor.data[2]);
     if(sensor.data[0] + sensor.data[1] + sensor.data[2] == 765) {
       sensors = sensors + '0';
     } else {
@@ -165,14 +144,11 @@ export default Ember.Component.extend({
 
     var a = [xy[0] + size * dx - size * dy - 1 * dx, xy[1] + size * dy - size * dx - 1 * dy]
     var sensor = ctx.getImageData(a[0], a[1], 1, 1);
-    console.log(a, sensor.data[0] + sensor.data[1] + sensor.data[2]);
     if(sensor.data[0] + sensor.data[1] + sensor.data[2] == 765) {
       sensors = sensors + '0';
     } else {
       sensors = sensors + '1';
     }
-
-    // sensors = sensors + '1';
     console.log(sensors);
     this.set('sensors', sensors)
   },
