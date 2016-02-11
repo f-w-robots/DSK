@@ -79,8 +79,8 @@ export default Ember.Component.extend(Ember.Evented, {
   },
 
   getXZOf: function(x, y) {
-    return [this.get('offset') + this.get('cellSize') * y,
-      this.get('offset') + this.get('cellSize') * x];
+    return [this.get('offset') + this.get('cellSize') * x,
+      this.get('offset') + this.get('cellSize') * y];
   },
 
   rotateImage: function(image,angle) {
@@ -151,34 +151,6 @@ export default Ember.Component.extend(Ember.Evented, {
 
     registerCar: function(car) {
       this.get('cars')[car.getId()] = car;
-    },
-
-    updateSensors: function(car) {
-      var position = car.getPosition();
-      var xy = position[0];
-      var angle = position[1];
-      var size = Math.trunc(car.get('imgSize') / 2 + 1);
-      var ctx = field.getContext("2d");
-
-      var sensors = '';
-      for (var i = 0; i < 4; i++) {
-        if(i == 2) {
-          sensors = sensors + '-';
-          continue;
-        }
-        var dx = Math.round(size * Math.cos(angle + i * Math.PI/2));
-        var dy = Math.round(size * Math.sin(angle + i * Math.PI/2));
-
-        var sensorF = ctx.getImageData(xy[0] + dx, xy[1] + dy, 1, 1);
-
-        if(sensorF.data[0] + sensorF.data[1] + sensorF.data[2] == 0) {
-          sensors = sensors + '0';
-        } else {
-          sensors = sensors + '1';
-        }
-      }
-
-      car.set('sensors', sensors)
     },
   }
 });
