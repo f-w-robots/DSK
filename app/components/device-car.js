@@ -7,6 +7,7 @@ export default Ember.Component.extend({
   imgSize: 65,
   position: null,
   carId: null,
+  angle: null,
 
   didInsertElement: function() {
     var img = new Image();
@@ -32,24 +33,50 @@ export default Ember.Component.extend({
 
   setReady: function() {
     this.set('ready', true);
-    // TODO - ip
-    var socket = new WebSocket("ws://localhost:2500/turtle");
     var self = this;
-    socket.onopen = function (event) {
-      self.updateImage('ok');
-    };
+
+
+    setTimeout(function() {
+      // TODO - ip
+      var socket = new WebSocket("ws://localhost:2500/turtle");
+      socket.onopen = function (event) {
+        self.updateImage('ok');
+        self.updateSensors();
+      };
+
+      socket.onmessage = function (event) {
+        console.log(event.data);
+        self.updateSensors();
+        // socket.send(self.sensorsRead());
+      };
+
+      socket.onerror = function (event) {
+        self.updateImage('error');
+      };
+
+      socket.onclose = function (event) {
+        self.updateImage('error');
+      };
+
+
+    }, Math.random() * 3000);
 
   },
 
   getPosition() {
-    return this.get('position');
+    return [this.get('position'), this.get('angle')];
   },
 
-  setPosition(position) {
+  setPosition(position, angle) {
     this.set('position', position);
+    this.set('angle', angle);
   },
 
   getImage() {
     return this.get('img')
+  },
+
+  updateSensors: function() {
+    this.get('parentView').send('updateSensors', this);
   }
 });
