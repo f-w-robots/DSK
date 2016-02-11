@@ -3,14 +3,23 @@ import Ember from 'ember';
 export default Ember.Component.extend(Ember.Evented, {
   cars: {},
   obstacles: null,
+  offset: null,
 
   generateObstacles: function() {
     var cellCount = this.get('cellCount');
 
     this.set('obstacles', []);
-    for(var i = 0; i < cellCount; i++) {
+    for(var i = 0; i < cellCount;) {
       var positionX = Math.trunc(Math.random() * (cellCount - 0.00001));
       var positionY = Math.trunc(Math.random() * (cellCount - 0.00001));
+      if(positionY > 0 && positionY < cellCount - 1
+        && positionX > 0 && positionX < cellCount - 1
+      /*TODO - dublicates*/) {
+        i++
+      } else {
+        continue;
+      }
+
       this.get('obstacles').push([positionX, positionY]);
     }
   },
@@ -20,6 +29,9 @@ export default Ember.Component.extend(Ember.Evented, {
     var border = this.get('border');
     var cellSize = this.get('cellSize');
     var cellCount = this.get('cellCount');
+    var offset = border + cellSize / 2;
+    this.set('offset', offset);
+
     field.width  = cellCount * cellSize + 2 * border;
     field.height = field.width;
     ctx.fillRect(0, 0, field.width, field.height);
@@ -31,7 +43,6 @@ export default Ember.Component.extend(Ember.Evented, {
     ctx.lineWidth = cellSize / 10;
 
     for (var i = 0; i < cellCount; i++) {
-      var offset = border + cellSize / 2;
 
       ctx.beginPath();
       ctx.moveTo(offset - border / 2, offset + cellSize * i);
@@ -64,26 +75,54 @@ export default Ember.Component.extend(Ember.Evented, {
     }
   },
 
+  getXZOf: function(x, y) {
+    return [this.get('offset') + this.get('cellSize') * y,
+      this.get('offset') + this.get('cellSize') * x]
+  },
+
   displayCars: function() {
     var ctx = field.getContext("2d");
     for (var key in this.get('cars')) {
-      var img = this.get('cars')[key].getImage()
-      ctx.drawImage(img,100,100, 100, 100);
+      var car = this.get('cars')[key]
+      var img = car.getImage()
+      var position = car.getPosition();
+      console.log(position);
+      if(!position)
+        continue
+      console.log(img);
+      ctx.drawImage(img, position[0] - img.width / 2,
+        position[1] - img.height / 2,
+        img.width, img.height);
     }
   },
 
-  generate: function() {
+  refresh: function() {
     this.generateField();
     this.displayCars();
   },
 
   didInsertElement: function() {
-    this.generate();
+    this.generateField();
+
+    for (var key in this.get('cars')) {
+      var car = this.get('cars')[key]
+      if(car.getId() == 1) {
+        car.setPosition(this.getXZOf(0,0));
+      } else if (car.getId() == 2) {
+        car.setPosition(this.getXZOf(this.get('cellCount') - 1, this.get('cellCount') - 1));
+      } else if (car.getId() == 3) {
+        car.setPosition(this.getXZOf(this.get('cellCount') - 1, 0));
+      } else if (car.getId() == 4) {
+        car.setPosition(this.getXZOf(0, this.get('cellCount') - 1));
+      }
+    }
+    this.send('update')
+
   },
 
   actions: {
     update: function() {
-      this.generate();
+      this.refresh();
     },
 
     registerCar: function(car) {
