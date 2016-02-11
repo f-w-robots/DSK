@@ -14,13 +14,16 @@ export default Ember.Component.extend({
 
     this.get('parentView').send('registerCar', this);
 
-    self = this;
+    var self = this;
     img.onload = function () {
-
       self.get('parentView').send('update', self);
     }
+    this.updateImage('power');
+    this.setReady();
+  },
 
-    img.src = "images/car.png";
+  updateImage: function(url) {
+    this.get('img').src = 'images/car_' + url + '.png';
   },
 
   getId: function() {
@@ -29,6 +32,13 @@ export default Ember.Component.extend({
 
   setReady: function() {
     this.set('ready', true);
+    // TODO - ip
+    var socket = new WebSocket("ws://localhost:2500/turtle");
+    var self = this;
+    socket.onopen = function (event) {
+      self.updateImage('ok');
+    };
+
   },
 
   getPosition() {

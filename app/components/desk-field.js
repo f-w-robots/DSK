@@ -68,7 +68,8 @@ export default Ember.Component.extend(Ember.Evented, {
       var positionX = this.get('obstacles')[i][0];
       var positionY = this.get('obstacles')[i][1];
 
-      ctx.arc(offset + cellSize * positionX, offset + cellSize * positionY, cellSize * 0.4, 0, 2 * Math.PI, false);
+      ctx.arc(offset + cellSize * positionX, offset + cellSize * positionY,
+        cellSize * 0.4, 0, 2 * Math.PI, false);
       ctx.fill();
 
       ctx.stroke();
@@ -77,19 +78,17 @@ export default Ember.Component.extend(Ember.Evented, {
 
   getXZOf: function(x, y) {
     return [this.get('offset') + this.get('cellSize') * y,
-      this.get('offset') + this.get('cellSize') * x]
+      this.get('offset') + this.get('cellSize') * x];
   },
 
   displayCars: function() {
     var ctx = field.getContext("2d");
     for (var key in this.get('cars')) {
-      var car = this.get('cars')[key]
-      var img = car.getImage()
+      var car = this.get('cars')[key];
+      var img = car.getImage();
       var position = car.getPosition();
-      console.log(position);
       if(!position)
-        continue
-      console.log(img);
+        continue;
       ctx.drawImage(img, position[0] - img.width / 2,
         position[1] - img.height / 2,
         img.width, img.height);
@@ -116,7 +115,8 @@ export default Ember.Component.extend(Ember.Evented, {
         car.setPosition(this.getXZOf(0, this.get('cellCount') - 1));
       }
     }
-    this.send('update')
+
+    this.send('update');
 
   },
 
