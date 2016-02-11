@@ -1,7 +1,7 @@
 import Ember from 'ember';
 
 export default Ember.Component.extend(Ember.Evented, {
-  cars: {},
+  devices: {},
   obstacles: null,
   offset: null,
 
@@ -83,35 +83,35 @@ export default Ember.Component.extend(Ember.Evented, {
       this.get('offset') + this.get('cellSize') * y];
   },
 
-  displayCars: function() {
-    for (var key in this.get('cars')) {
-      var car = this.get('cars')[key];
+  displayDevices: function() {
+    for (var key in this.get('devices')) {
+      var device = this.get('devices')[key];
 
-      if(!car.getPosition())
+      if(!device.getPosition())
         continue;
 
-      car.draw(field);
+      device.draw(field);
     }
   },
 
   refresh: function() {
     this.generateField();
-    this.displayCars();
+    this.displayDevices();
   },
 
   didInsertElement: function() {
     this.generateField();
 
-    for (var key in this.get('cars')) {
-      var car = this.get('cars')[key]
-      if(car.getId() == 1) {
-        car.setPosition(this.getXZOf(0,0), Math.PI * car.getId() * 0.5);
-      } else if (car.getId() == 2) {
-        car.setPosition(this.getXZOf(this.get('cellCount') - 1, this.get('cellCount') - 1), Math.PI * car.getId() * 0.5 );
-      } else if (car.getId() == 3) {
-        car.setPosition(this.getXZOf(this.get('cellCount') - 1, 0), Math.PI * car.getId() * 0.5 );
-      } else if (car.getId() == 4) {
-        car.setPosition(this.getXZOf(0, this.get('cellCount') - 1), Math.PI * car.getId() * 0.5 );
+    for (var key in this.get('devices')) {
+      var device = this.get('devices')[key]
+      if(device.getId() == 1) {
+        device.setPosition(this.getXZOf(0,0), Math.PI * device.getId() * 0.5);
+      } else if (device.getId() == 2) {
+        device.setPosition(this.getXZOf(this.get('cellCount') - 1, this.get('cellCount') - 1), Math.PI * device.getId() * 0.5 );
+      } else if (device.getId() == 3) {
+        device.setPosition(this.getXZOf(this.get('cellCount') - 1, 0), Math.PI * device.getId() * 0.5 );
+      } else if (device.getId() == 4) {
+        device.setPosition(this.getXZOf(0, this.get('cellCount') - 1), Math.PI * device.getId() * 0.5 );
       }
     }
 
@@ -123,8 +123,8 @@ export default Ember.Component.extend(Ember.Evented, {
       this.refresh();
     },
 
-    registerCar: function(car) {
-      this.get('cars')[car.getId()] = car;
+    registerDevice: function(device) {
+      this.get('devices')[device.getId()] = device;
     },
   }
 });
