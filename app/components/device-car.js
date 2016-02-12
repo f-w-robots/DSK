@@ -1,154 +1,6 @@
 import Ember from 'ember';
 
-export default Ember.Component.extend({
-  position: null,
-  ready: false,
-  size: 64,
-  position: null,
-  carId: null,
-  angle: null,
-  status: 'power',
-  waitProp: true,
-  crashed: false,
-
-  didInsertElement: function() {
-    this.get('parentView').send('registerDevice', this);
-    this.setReady();
-  },
-
-  updateStatus: function(status) {
-    this.set('status', status);
-    this.update();
-  },
-
-  update() {
-    this.get('parentView').send('update', this);
-  },
-
-  getId: function() {
-    return this.get('carId');
-  },
-
-  setReady: function() {
-    this.set('ready', true);
-    var self = this;
-
-    setTimeout(function() {
-      var socket = new WebSocket("ws://localhost:2500/turtle" + self.getId());
-      self.set('socket', socket);
-      socket.onopen = function (event) {
-        self.updateStatus('ok');
-        socket.send('waiting');
-      };
-
-      socket.onmessage = function (event) {
-        if(event.data.startsWith("S")) {
-          self.execCommand(event.data.substr(1,event.data.length));
-        }
-      };
-
-      socket.onerror = function (event) {
-        self.updateStatus('error');
-      };
-
-      socket.onclose = function (event) {
-        self.updateStatus('error');
-      };
-
-    }, Math.random() * 300);
-
-  },
-
-  getPosition() {
-    return [this.get('position'), this.get('angle')];
-  },
-
-  setPosition(position, angle) {
-    this.set('position', position);
-    this.set('angle', angle);
-  },
-
-  makeImage: function() {
-    var canvas = document.createElement('canvas');
-    var ctx = canvas.getContext('2d');
-
-    var context = ctx;
-
-    canvas.width = this.get('size') - 20;
-    canvas.height = this.get('size');
-
-    if(!this.get('crashed'))
-      ctx.fillStyle = '#DAB218';
-    else
-      ctx.fillStyle = '#F71622';
-    ctx.fillRect(0,0, canvas.width, canvas.height)
-
-    ctx.beginPath();
-    var status = this.get('status');
-    if(status == 'power') {
-      ctx.fillStyle = 'green';
-    }
-    if(status == 'error') {
-      ctx.fillStyle = 'red';
-    }
-    if(status == 'ok') {
-      ctx.fillStyle = 'blue';
-    }
-    ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width * 0.2, 0, 2 * Math.PI, false);
-    ctx.fill();
-
-    ctx.fillStyle = '#0AB218';
-    ctx.fillRect(0,0, canvas.width, 10)
-
-    return canvas;
-  },
-
-  draw: function(field) {
-    var context = field.getContext("2d");
-    var xy = this.get('position');
-
-    var image = this.makeImage()
-
-    context.save();
-	  context.translate(xy[0], xy[1]);
-	  context.rotate(this.get('angle') + Math.PI/2);
-	  context.drawImage(image, -(image.width/2), -(image.height/2));
-    context.restore();
-  },
-
-  readyToNewMsg: function() {
-    this.get('socket').send('wait');
-  },
-
-  execCommand: function(commands) {
-    var i = 0;
-    var self = this;
-    var intervalId = setInterval(function() {
-      if(!self.get('waitProp'))
-        return;
-      if(self.get('crashed')) {
-        clearInterval(intervalId);
-        return;
-      }
-      if(i > commands.length - 1) {
-        clearInterval(intervalId);
-        self.readyToNewMsg();
-        return;
-      }
-      var command = commands[i];
-      i++;
-      console.log(commands, i);
-      if(command == 'f')
-        self.moveAnimate()
-      if(command == 'l' || command == 'r')
-        self.rotateAnimate(command);
-    }, 10);
-  },
-
-  wait: function(wait = true) {
-    this.set('waitProp', wait);
-  },
-
+var Mover = Ember.Mixin.create({
   moveAnimate: function() {
     if(this.get('crashed'))
       return
@@ -203,6 +55,159 @@ export default Ember.Component.extend({
     if(this.get('sensors')[0] != '0')
       this.crash();
   },
+});
+
+var Painter = Ember.Mixin.create({
+  makeImage: function() {
+    var canvas = document.createElement('canvas');
+    var ctx = canvas.getContext('2d');
+
+    var context = ctx;
+
+    canvas.width = this.get('size') - 20;
+    canvas.height = this.get('size');
+
+    if(!this.get('crashed'))
+      ctx.fillStyle = '#DAB218';
+    else
+      ctx.fillStyle = '#F71622';
+    ctx.fillRect(0,0, canvas.width, canvas.height)
+
+    ctx.beginPath();
+    var status = this.get('status');
+    if(status == 'power') {
+      ctx.fillStyle = 'green';
+    }
+    if(status == 'error') {
+      ctx.fillStyle = 'red';
+    }
+    if(status == 'ok') {
+      ctx.fillStyle = 'blue';
+    }
+    ctx.arc(canvas.width / 2, canvas.height / 2, canvas.width * 0.2, 0, 2 * Math.PI, false);
+    ctx.fill();
+
+    ctx.fillStyle = '#0AB218';
+    ctx.fillRect(0,0, canvas.width, 10)
+
+    return canvas;
+  },
+
+  draw: function(field) {
+    var context = field.getContext("2d");
+    var xy = this.get('position');
+
+    var image = this.makeImage()
+
+    context.save();
+	  context.translate(xy[0], xy[1]);
+	  context.rotate(this.get('angle') + Math.PI/2);
+	  context.drawImage(image, -(image.width/2), -(image.height/2));
+    context.restore();
+  },
+
+});
+
+export default Ember.Component.extend(Painter, Mover, {
+  deviceId: null,
+  position: null,
+  ready: false,
+  size: 64,
+  position: null,
+  angle: null,
+  status: 'power',
+  waitProp: true,
+  crashed: false,
+
+  didInsertElement: function() {
+    this.get('parentView').send('registerDevice', this);
+    this.connect();
+  },
+
+  updateStatus: function(status) {
+    this.set('status', status);
+    this.update();
+  },
+
+  update() {
+    this.get('parentView').send('update', this);
+  },
+
+  getId: function() {
+    return this.get('deviceId');
+  },
+
+  connect: function() {
+    var self = this;
+
+    setTimeout(function() {
+      var socket = new WebSocket("ws://" + location.hostname + ":2500/turtle" + self.getId());
+      self.set('socket', socket);
+
+      socket.onopen = function (event) {
+        self.updateStatus('ok');
+        socket.send('waiting');
+      };
+
+      socket.onmessage = function (event) {
+        if(event.data.startsWith("S")) {
+          self.execCommand(event.data.substr(1,event.data.length));
+        }
+      };
+
+      socket.onerror = function (event) {
+        self.updateStatus('error');
+      };
+
+      socket.onclose = function (event) {
+        self.updateStatus('error');
+      };
+
+    }, Math.random() * 300);
+  },
+
+  isReady: function() {
+    return this.get('ready');
+  },
+
+  prepare: function(position, angle) {
+    this.set('position', position);
+    this.set('angle', angle);
+    this.set('ready', true);
+  },
+
+  readyToNewMsg: function() {
+    this.get('socket').send('wait');
+  },
+
+  execCommand: function(commands) {
+    var i = 0;
+    var self = this;
+    var intervalId = setInterval(function() {
+      if(!self.get('waitProp'))
+        return;
+      if(self.get('crashed')) {
+        clearInterval(intervalId);
+        return;
+      }
+      if(i > commands.length - 1) {
+        clearInterval(intervalId);
+        self.readyToNewMsg();
+        return;
+      }
+      var command = commands[i];
+      i++;
+      console.log(commands, i);
+      if(command == 'f')
+        self.moveAnimate()
+      if(command == 'l' || command == 'r')
+        self.rotateAnimate(command);
+    }, 10);
+  },
+
+  wait: function(wait = true) {
+    this.set('waitProp', wait);
+  },
 
   crash: function() {
     this.set('crashed', true);
@@ -210,9 +215,8 @@ export default Ember.Component.extend({
   },
 
   updateSensors: function() {
-    var position = this.getPosition();
-    var xy = position[0];
-    var angle = position[1];
+    var xy = this.get('position');
+    var angle = this.get('angle');
     var size = Math.trunc(this.get('size') / 2 + 1);
     var ctx = field.getContext("2d");
 

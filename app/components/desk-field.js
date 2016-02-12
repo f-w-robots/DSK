@@ -16,7 +16,6 @@ export default Ember.Component.extend(Ember.Evented, {
       if(positionY + positionX == 0 || positionY + positionX == cellCount * 2 - 2
         || (positionX == 0 && positionY == cellCount -1)
         || (positionY == 0 && positionX == cellCount -1)
-        // TODO - dublicates
       ) {
         continue
       } else {
@@ -35,29 +34,32 @@ export default Ember.Component.extend(Ember.Evented, {
     var offset = border + cellSize / 2;
     this.set('offset', offset);
 
+    // Backgorund
     field.width  = cellCount * cellSize + 2 * border;
     field.height = field.width;
     ctx.fillRect(0, 0, field.width, field.height);
+
+    // Nav lines
+    ctx.strokeStyle = 'white';
+    ctx.lineWidth = cellSize / 10;
+    for (var i = 0; i < cellCount; i++) {
+      ctx.beginPath();
+      ctx.moveTo(0, offset + cellSize * i);
+      ctx.lineTo(field.width, offset + cellSize * i);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(offset + cellSize * i, 0);
+      ctx.lineTo(offset + cellSize * i, field.width);
+      ctx.stroke();
+    }
+
+    // Borders
     ctx.lineWidth = border * 2;
     ctx.strokeStyle = 'blue';
     ctx.strokeRect(0, 0, field.width, field.height);
 
-    ctx.strokeStyle = 'white';
-    ctx.lineWidth = cellSize / 10;
-
-    for (var i = 0; i < cellCount; i++) {
-
-      ctx.beginPath();
-      ctx.moveTo(offset - border / 2, offset + cellSize * i);
-      ctx.lineTo(field.width - offset + border / 2, offset + cellSize * i);
-      ctx.stroke();
-
-      ctx.beginPath();
-      ctx.moveTo(offset + cellSize * i, offset);
-      ctx.lineTo(offset + cellSize * i, field.width - offset);
-      ctx.stroke();
-    }
-
+    // Obstacles
     if(!this.get('obstacles')) {
       this.generateObstacles();
     }
@@ -87,7 +89,7 @@ export default Ember.Component.extend(Ember.Evented, {
     for (var key in this.get('devices')) {
       var device = this.get('devices')[key];
 
-      if(!device.getPosition())
+      if(!device.isReady())
         continue;
 
       device.draw(field);
@@ -102,20 +104,31 @@ export default Ember.Component.extend(Ember.Evented, {
   didInsertElement: function() {
     this.generateField();
 
+    var i = 0;
+    var cellCount = this.get('cellCount');
+
     for (var key in this.get('devices')) {
+      i++;
+
       var device = this.get('devices')[key]
-      if(device.getId() == 1) {
-        device.setPosition(this.getXZOf(0,0), Math.PI * device.getId() * 0.5);
-      } else if (device.getId() == 2) {
-        device.setPosition(this.getXZOf(this.get('cellCount') - 1, this.get('cellCount') - 1), Math.PI * device.getId() * 0.5 );
-      } else if (device.getId() == 3) {
-        device.setPosition(this.getXZOf(this.get('cellCount') - 1, 0), Math.PI * device.getId() * 0.5 );
-      } else if (device.getId() == 4) {
-        device.setPosition(this.getXZOf(0, this.get('cellCount') - 1), Math.PI * device.getId() * 0.5 );
+      var angle = Math.PI * i * 0.5;
+      switch (i) {
+        case 1:
+          device.prepare(this.getXZOf(0,0), angle);
+          break;
+        case 2:
+          device.prepare(this.getXZOf(0, cellCount - 1), angle);
+          break;
+        case 3:
+          device.prepare(this.getXZOf(cellCount - 1, 0), angle);
+          break;
+        case 4:
+          device.prepare(this.getXZOf(cellCount - 1, cellCount - 1), angle);
+          break;
+        default:
+
       }
     }
-
-    this.send('update');
   },
 
   actions: {
