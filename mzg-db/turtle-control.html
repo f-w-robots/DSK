@@ -8,11 +8,8 @@
 <br>
 <button id="start">Start</button>
 <br>
+<br>
 <div class="commandList">
-  <div class="wait">f</div>
-  <div class="wait">f</div>
-  <div class="wait">l</div>
-  <div class="wait">f</div>
 </div>
 
 <style media="screen">
@@ -36,6 +33,7 @@
 <script type="text/javascript">
     $('.controlBlock button').click(function(event) {
       $('#stack').val($('#stack').val() + event.target.className);
+      $(".commandList").append("<div class='wait'>" + event.target.className + "</div>")
     });
 
     $('#start').click(function(){
@@ -46,17 +44,18 @@
       });
     });
 
-    function downCommand() {
+    function downCommand(message) {
       var command = $('.commandList div.wait').first()
-      command.removeClass('wait').addClass('ready')
+      var className = 'ready';
+      if(message == 'crash')
+        className = 'error';
+      command.removeClass('wait').addClass(className)
     }
 
     setInterval(function() {
       if(messageStack.length > 0) {
-        downCommand()
-        messageStack = []
-        console.log(messageStack);
+        console.log(messageStack.join());
+        downCommand(messageStack.shift());
       }
-    }, 1000);
-
+    }, 10);
 </script>

@@ -126,6 +126,10 @@ export default Ember.Component.extend({
     var intervalId = setInterval(function() {
       if(!self.get('waitProp'))
         return;
+      if(self.get('crashed')) {
+        clearInterval(intervalId);
+        return;
+      }
       if(i > commands.length - 1) {
         clearInterval(intervalId);
         self.readyToNewMsg();
@@ -197,7 +201,7 @@ export default Ember.Component.extend({
     xy[1] += dy;
     this.updateSensors();
     if(this.get('sensors')[0] != '0')
-      this.set('crashed', true);
+      this.crash();
   },
 
   crash: function() {
@@ -216,9 +220,8 @@ export default Ember.Component.extend({
 
     var dx = Math.round(Math.cos(angle));
     var dy = Math.round(Math.sin(angle));
-// console.log(dx, dy);
+
     for (var i = 0; i < 4; i++) {
-      // console.log(xy[0], size * dx, size * dy, 1 * dx, xy[1] + size * dy + size * dx - 1 * dy);
       var a = [xy[0] + size * dx + size * dy - 1 * dx, xy[1] + size * dy + size * dx - 1 * dy]
       if(i == 0)
         var a = [xy[0] + size * dx, xy[1] + size * dy]
@@ -236,5 +239,4 @@ export default Ember.Component.extend({
     }
     this.set('sensors', sensors)
   },
-
 });
