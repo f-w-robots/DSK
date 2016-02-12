@@ -8,6 +8,8 @@ export default Ember.Component.extend({
   carId: null,
   angle: null,
   status: 'power',
+  waitProp: true,
+  crashed: false,
 
   didInsertElement: function() {
     this.get('parentView').send('registerDevice', this);
@@ -36,7 +38,6 @@ export default Ember.Component.extend({
       self.set('socket', socket);
       socket.onopen = function (event) {
         self.updateStatus('ok');
-        socket.send('wait');
       };
 
       socket.onmessage = function (event) {
@@ -75,7 +76,10 @@ export default Ember.Component.extend({
     canvas.width = this.get('size') - 20;
     canvas.height = this.get('size');
 
-    ctx.fillStyle = '#DAB218';
+    if(!this.get('crashed'))
+      ctx.fillStyle = '#DAB218';
+    else
+      ctx.fillStyle = '#F71622';
     ctx.fillRect(0,0, canvas.width, canvas.height)
 
     ctx.beginPath();
@@ -111,19 +115,34 @@ export default Ember.Component.extend({
     context.restore();
   },
 
-  execCommand: function(command) {
-    console.log(command);
-    if(command == 'f')
-      this.moveAnimate()
-    if(command == 'l' || command == 'r')
-      this.rotateAnimate(command);
+  execCommand: function(commands) {
+    var i = 0;
+    var self = this;
+    var intervalId = setInterval(function() {
+      if(!self.get('waitProp'))
+        return;
+      if(i > commands.length - 1) {
+        clearInterval(intervalId);
+        return;
+      }
+      var command = commands[i];
+      i++;
+      console.log(commands, i);
+      if(command == 'f')
+        self.moveAnimate()
+      if(command == 'l' || command == 'r')
+        self.rotateAnimate(command);
+    }, 10);
   },
 
-  wait: function() {
-    this.get('socket').send('wait')
+  wait: function(wait = true) {
+    this.set('waitProp', wait);
   },
 
   moveAnimate: function() {
+    if(this.get('crashed'))
+      return
+    this.wait(false);
     var self = this;
     var count = 0;
     var intervalId = setInterval(function() {
@@ -139,6 +158,9 @@ export default Ember.Component.extend({
   },
 
   rotateAnimate: function(direction) {
+    if(this.get('crashed'))
+      return
+    this.wait(false);
     var speed = 100;
     var self = this;
     var count = 0;
@@ -158,6 +180,8 @@ export default Ember.Component.extend({
   },
 
   move: function() {
+    if(this.get('crashed'))
+      return
     var angle = this.get('angle');
     var dx = Math.round(Math.cos(angle));
     var dy = Math.round(Math.sin(angle));
@@ -165,21 +189,30 @@ export default Ember.Component.extend({
     var xy = this.get('position');
     xy[0] += dx;
     xy[1] += dy;
+    this.updateSensors();
+    if(this.get('sensors')[0] != '0')
+      this.set('crashed', true);
   },
+
+  crash: function() {
+    this.set('crashed', true);
+    this.get('socket').send('crash');
+  }
 
   updateSensors: function() {
     var position = this.getPosition();
     var xy = position[0];
     var angle = position[1];
-    var size = Math.trunc(this.get('imgSize') / 2 + 1);
+    var size = Math.trunc(this.get('size') / 2 + 1);
     var ctx = field.getContext("2d");
 
     var sensors = '';
 
     var dx = Math.round(Math.cos(angle));
     var dy = Math.round(Math.sin(angle));
-
+// console.log(dx, dy);
     for (var i = 0; i < 4; i++) {
+      // console.log(xy[0], size * dx, size * dy, 1 * dx, xy[1] + size * dy + size * dx - 1 * dy);
       var a = [xy[0] + size * dx + size * dy - 1 * dx, xy[1] + size * dy + size * dx - 1 * dy]
       if(i == 0)
         var a = [xy[0] + size * dx, xy[1] + size * dy]
@@ -187,6 +220,7 @@ export default Ember.Component.extend({
         sensors = sensors + '-';
         continue;
       }
+
       var sensor = ctx.getImageData(a[0], a[1], 1, 1);
       if(sensor.data[0] + sensor.data[1] + sensor.data[2] == 765) {
         sensors = sensors + '0';
