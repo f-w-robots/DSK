@@ -5,9 +5,33 @@
   <button class="s">revert</button>
 </div>
 
+<br>
 <button id="start">Start</button>
+<br>
+<div class="commandList">
+  <div class="wait">f</div>
+  <div class="wait">f</div>
+  <div class="wait">l</div>
+  <div class="wait">f</div>
+</div>
 
-<textarea id="stack" name="name" rows="8" cols="40"></textarea>
+<style media="screen">
+  .commandList {
+    width: 100px;
+  }
+
+  .commandList .wait {
+    background: green;
+  }
+
+  .commandList .error {
+    background: red;
+  }
+
+  .commandList .ready {
+    background: blue;
+  }
+</style>
 
 <script type="text/javascript">
     $('.controlBlock button').click(function(event) {
@@ -15,23 +39,24 @@
     });
 
     $('#start').click(function(){
-      var commands = "S" + $('#stack').val();
-      console.log(commands);
-      socket.send(commands);
+      $('.commandList div.wait').each(function(i,e){
+        commands = "S" + $(e).html();
+        console.log(commands);
+        socket.send(commands);
+      });
     });
 
-    // setInterval(function() {
-    //   if(messageStack.indexOf('wait') > -1) {
-    //     console.log(messageStack);
-    //     var stack = $('#stack').html()
-    //     if(stack.length == 0)
-    //      return
-    //
-    //     messageStack = [];
-    //     var command = stack[0];
-    //     $('#stack').html(stack.substr(1, stack.length));
-    //     console.log('send');
-    //     socket.send("S" + command);
-    //   }
-    // }, 10);
+    function downCommand() {
+      var command = $('.commandList div.wait').first()
+      command.removeClass('wait').addClass('ready')
+    }
+
+    setInterval(function() {
+      if(messageStack.length > 0) {
+        downCommand()
+        messageStack = []
+        console.log(messageStack);
+      }
+    }, 1000);
+
 </script>

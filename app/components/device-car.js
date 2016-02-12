@@ -38,6 +38,7 @@ export default Ember.Component.extend({
       self.set('socket', socket);
       socket.onopen = function (event) {
         self.updateStatus('ok');
+        socket.send('waiting');
       };
 
       socket.onmessage = function (event) {
@@ -115,6 +116,10 @@ export default Ember.Component.extend({
     context.restore();
   },
 
+  readyToNewMsg: function() {
+    this.get('socket').send('wait');
+  },
+
   execCommand: function(commands) {
     var i = 0;
     var self = this;
@@ -123,6 +128,7 @@ export default Ember.Component.extend({
         return;
       if(i > commands.length - 1) {
         clearInterval(intervalId);
+        self.readyToNewMsg();
         return;
       }
       var command = commands[i];
@@ -197,7 +203,7 @@ export default Ember.Component.extend({
   crash: function() {
     this.set('crashed', true);
     this.get('socket').send('crash');
-  }
+  },
 
   updateSensors: function() {
     var position = this.getPosition();
