@@ -70,7 +70,7 @@ var Painter = Ember.Mixin.create({
     if(!this.get('crashed'))
       ctx.fillStyle = '#DAB218';
     else
-      ctx.fillStyle = '#F71622';
+      ctx.fillStyle = '#973622';
     ctx.fillRect(0,0, canvas.width, canvas.height)
 
     ctx.beginPath();
