@@ -1,23 +1,5 @@
 {
-  "name": "dsk",
-  "version": "0.0.0",
-  "description": "Small description for dsk goes here",
-  "private": true,
-  "directories": {
-    "doc": "doc",
-    "test": "tests"
-  },
-  "scripts": {
-    "build": "ember build",
-    "start": "ember server",
-    "test": "ember test"
-  },
-  "repository": "",
-  "engines": {
-    "node": ">= 0.10.0"
-  },
-  "author": "",
-  "license": "MIT",
+  "description": "base dependencies for ember",
   "devDependencies": {
     "broccoli-asset-rev": "^2.2.0",
     "ember-ajax": "0.7.1",

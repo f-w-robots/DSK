@@ -1,5 +1,6 @@
 {
   "port" : 5600,
   "host": "0.0.0.0",
-  "liveReload": false
+  "liveReload": false,
+  "disableAnalytics": false
 }
