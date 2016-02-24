@@ -10,7 +10,7 @@ Game board
   - cd DSK
   - docker-compose up -d
   - go to http://localhost:4200/
-  - create new interface with ID "turtle" and body from DSK/mzg-db/turtle-control.html
+  - create new interface with ID "turtle" and body from MZG/db-code/dsk-control.html
   - create new device with ID "turtle1", Manual checkbox checked and Interface ID "turtle"
   - go to http://localhost:5600/
   - open in new tab http://localhost:4200/ and select turtle1 in Manual control list
