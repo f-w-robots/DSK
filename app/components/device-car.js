@@ -1,8 +1,12 @@
 import Ember from 'ember';
 
 var Mover = Ember.Mixin.create({
+  canMove: function() {
+    return this.get('crashed') || this.get('winned');
+  },
+
   moveAnimate: function() {
-    if(this.get('crashed'))
+    if(this.canMove())
       return
     this.wait(false);
     var self = this;
@@ -20,8 +24,8 @@ var Mover = Ember.Mixin.create({
   },
 
   rotateAnimate: function(direction) {
-    if(this.get('crashed'))
-      return
+    if(this.canMove())
+      return;
     this.wait(false);
     var speed = 100;
     var self = this;
@@ -42,8 +46,8 @@ var Mover = Ember.Mixin.create({
   },
 
   move: function() {
-    if(this.get('crashed'))
-      return
+    if(this.canMove())
+      return;
     var angle = this.get('angle');
     var dx = Math.round(Math.cos(angle));
     var dy = Math.round(Math.sin(angle));
@@ -52,7 +56,10 @@ var Mover = Ember.Mixin.create({
     xy[0] += dx;
     xy[1] += dy;
     this.updateSensors();
-    if(this.get('sensors')[0] != '0')
+    console.log(this.get('sensors')[0]);
+    if(this.get('sensors')[0] == '2')
+      this.win();
+    else if(this.get('sensors')[0] != '0')
       this.crash();
   },
 });
@@ -67,10 +74,12 @@ var Painter = Ember.Mixin.create({
     canvas.width = this.get('size') - 20;
     canvas.height = this.get('size');
 
-    if(!this.get('crashed'))
-      ctx.fillStyle = '#DAB218';
-    else
+    if(this.get('crashed'))
       ctx.fillStyle = '#973622';
+    else if(this.get('winned'))
+      ctx.fillStyle = '#90C3D4';
+    else
+      ctx.fillStyle = '#DAB218';
     ctx.fillRect(0,0, canvas.width, canvas.height)
 
     ctx.beginPath();
@@ -186,7 +195,7 @@ export default Ember.Component.extend(Painter, Mover, {
     var intervalId = setInterval(function() {
       if(!self.get('waitProp'))
         return;
-      if(self.get('crashed')) {
+      if(self.get('crashed') || self.get('winned')) {
         clearInterval(intervalId);
         return;
       }
@@ -214,6 +223,11 @@ export default Ember.Component.extend(Painter, Mover, {
     this.get('socket').send('crash');
   },
 
+  win: function() {
+    this.set('winned', true);
+    this.get('socket').send('win');
+  },
+
   updateSensors: function() {
     var xy = this.get('position');
     var angle = this.get('angle');
@@ -235,11 +249,20 @@ export default Ember.Component.extend(Painter, Mover, {
       }
 
       var sensor = ctx.getImageData(a[0], a[1], 1, 1);
+      // console.log(sensor.data[0] + sensor.data[1] + sensor.data[2]);
       if(sensor.data[0] + sensor.data[1] + sensor.data[2] == 765) {
         sensors = sensors + '0';
+        // console.log('A0');
       } else {
-        sensors = sensors + '1';
+        if(sensor.data[0] + sensor.data[1] + sensor.data[2] == 611) {
+          // console.log('A-1');
+          sensors = sensors + '2';
+        } else {
+          // console.log('A+1');
+          sensors = sensors + '1';
+        }
       }
+      console.log(sensors);
     }
     this.set('sensors', sensors)
   },

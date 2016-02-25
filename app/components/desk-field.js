@@ -16,6 +16,7 @@ export default Ember.Component.extend(Ember.Evented, {
       if(positionY + positionX == 0 || positionY + positionX == cellCount * 2 - 2
         || (positionX == 0 && positionY == cellCount -1)
         || (positionY == 0 && positionX == cellCount -1)
+        || (positionY == Math.trunc(cellCount / 2) && positionX == Math.trunc(cellCount / 2))
       ) {
         continue
       } else {
@@ -63,11 +64,12 @@ export default Ember.Component.extend(Ember.Evented, {
     if(!this.get('obstacles')) {
       this.generateObstacles();
     }
+
+    ctx.strokeStyle = 'red';
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.lineWidth = 1;
     for(var i = 0; i < this.get('obstacles').length; i++) {
       ctx.beginPath();
-      ctx.strokeStyle = 'red';
-      ctx.fillStyle = 'red';
-      ctx.lineWidth = 1;
 
       var positionX = this.get('obstacles')[i][0];
       var positionY = this.get('obstacles')[i][1];
@@ -78,6 +80,19 @@ export default Ember.Component.extend(Ember.Evented, {
 
       ctx.stroke();
     }
+
+    // Win
+    ctx.beginPath();
+    ctx.strokeStyle = '#33ff77';
+    ctx.fillStyle = ctx.strokeStyle;
+    var positionX = Math.trunc(cellCount / 2);
+    var positionY = positionX;
+
+    ctx.arc(offset + cellSize * positionX, offset + cellSize * positionY,
+      cellSize * 0.2, 0, 2 * Math.PI, false);
+    ctx.fill();
+
+    ctx.stroke();
   },
 
   getXZOf: function(x, y) {
