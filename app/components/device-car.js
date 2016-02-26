@@ -56,12 +56,34 @@ var Mover = Ember.Mixin.create({
     xy[0] += dx;
     xy[1] += dy;
     this.updateSensors();
-    console.log(this.get('sensors')[0]);
     if(this.get('sensors')[0] == '2')
       this.win();
     else if(this.get('sensors')[0] != '0')
       this.crash();
   },
+
+  realocate: function(command) {
+    this.saveLastPosition();
+    if(command == 'f')
+      this.moveAnimate();
+    if(command == 'l' || command == 'r')
+      this.rotateAnimate(command);
+  },
+
+  saveLastPosition: function() {
+    this.set('positionLast', this.get('position').slice(0));
+    this.set('angleLast', this.get('angle'));
+    console.log(this.get('positionLast'));
+  },
+
+  restore: function() {
+    console.log('restore', this.get('positionLast'));
+    this.set('position', this.get('positionLast').slice(0));
+    this.set('angle', this.get('angleLast'));
+    this.set('crashed', false);
+    this.update();
+  }
+
 });
 
 var Painter = Ember.Mixin.create({
@@ -159,9 +181,13 @@ export default Ember.Component.extend(Painter, Mover, {
       };
 
       socket.onmessage = function (event) {
-        if(event.data.startsWith("S")) {
+        console.log(event.data);
+        if(event.data.startsWith("Srestore")) {
+          self.restore();
+        } else if(event.data.startsWith("S")) {
           self.execCommand(event.data.substr(1,event.data.length));
         }
+
       };
 
       socket.onerror = function (event) {
@@ -206,13 +232,11 @@ export default Ember.Component.extend(Painter, Mover, {
       }
       var command = commands[i];
       i++;
-      console.log(commands, i);
-      if(command == 'f')
-        self.moveAnimate()
-      if(command == 'l' || command == 'r')
-        self.rotateAnimate(command);
+
+      self.realocate(command);
     }, 10);
   },
+
 
   wait: function(wait = true) {
     this.set('waitProp', wait);
@@ -249,20 +273,15 @@ export default Ember.Component.extend(Painter, Mover, {
       }
 
       var sensor = ctx.getImageData(a[0], a[1], 1, 1);
-      // console.log(sensor.data[0] + sensor.data[1] + sensor.data[2]);
       if(sensor.data[0] + sensor.data[1] + sensor.data[2] == 765) {
         sensors = sensors + '0';
-        // console.log('A0');
       } else {
         if(sensor.data[0] + sensor.data[1] + sensor.data[2] == 611) {
-          // console.log('A-1');
           sensors = sensors + '2';
         } else {
-          // console.log('A+1');
           sensors = sensors + '1';
         }
       }
-      console.log(sensors);
     }
     this.set('sensors', sensors)
   },
