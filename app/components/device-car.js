@@ -73,14 +73,13 @@ var Mover = Ember.Mixin.create({
   saveLastPosition: function() {
     this.set('positionLast', this.get('position').slice(0));
     this.set('angleLast', this.get('angle'));
-    console.log(this.get('positionLast'));
   },
 
   restore: function() {
-    console.log('restore', this.get('positionLast'));
     this.set('position', this.get('positionLast').slice(0));
     this.set('angle', this.get('angleLast'));
     this.set('crashed', false);
+    this.readyToNewMsg();
     this.update();
   }
 
@@ -181,7 +180,6 @@ export default Ember.Component.extend(Painter, Mover, {
       };
 
       socket.onmessage = function (event) {
-        console.log(event.data);
         if(event.data.startsWith("Srestore")) {
           self.restore();
         } else if(event.data.startsWith("S")) {
