@@ -180,12 +180,11 @@ export default Ember.Component.extend(Painter, Mover, {
       };
 
       socket.onmessage = function (event) {
-        if(event.data.startsWith("Srestore")) {
+        if(event.data.startsWith("restore")) {
           self.restore();
-        } else if(event.data.startsWith("S")) {
-          self.execCommand(event.data.substr(1,event.data.length));
+        } else {
+          self.execCommand(event.data);
         }
-
       };
 
       socket.onerror = function (event) {
