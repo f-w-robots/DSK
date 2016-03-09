@@ -176,14 +176,14 @@ export default Ember.Component.extend(Painter, Mover, {
 
       socket.onopen = function (event) {
         self.updateStatus('ok');
-        socket.send('waiting');
       };
 
       socket.onmessage = function (event) {
         if(event.data.startsWith("restore")) {
           self.restore();
         } else {
-          self.execCommand(event.data);
+          console.log(event.data);
+          self.execCommand(event.data[0]);
         }
       };
 
