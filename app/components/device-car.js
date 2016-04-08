@@ -209,7 +209,7 @@ export default Ember.Component.extend(Painter, Mover, {
   },
 
   readyToNewMsg: function() {
-    this.get('socket').send('wait');
+    this.get('socket').send('ready');
   },
 
   execCommand: function(commands) {
