@@ -182,8 +182,8 @@ export default Ember.Component.extend(Painter, Mover, {
         if(event.data.startsWith("restore")) {
           self.restore();
         } else {
-          console.log(event.data);
           self.execCommand(event.data[0]);
+          self.get('socket').send('accepted');
         }
       };
 
