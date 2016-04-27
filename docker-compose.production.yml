@@ -1,0 +1,6 @@
+dsk:
+  build: .
+  command: ember build --environment=production
+  volumes:
+    - ./dist:/app/dist
+  env_file: .env
